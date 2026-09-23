@@ -93,21 +93,21 @@ async function loadJob() {
 
         <!-- Interview Preparation Helper -->
         ${interviewPrep.length ? `
-            <hr>
-            <div style="margin: 20px 0;">
-                <h3 style="font-size: 17px; font-weight: 800; color: #1e3a8a; margin-bottom: 12px;">💬 Targeted Interview Preparation Questions</h3>
-                <div style="display: flex; flex-direction: column; gap: 12px;">
+            <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 24px 0;">
+            <div style="margin: 24px 0;">
+                <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px;">💬 Targeted Interview Preparation Questions</h3>
+                <div style="display: flex; flex-direction: column; gap: 14px;">
                     ${interviewPrep.map((q, idx) => `
-                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; padding: 14px; border-radius: 8px;">
-                            <strong style="font-size: 14px; color: #0f172a;">Q${idx + 1}: ${escapeHtml(q.question)}</strong>
-                            <p style="font-size: 13px; color: #475569; margin-top: 4px;">💡 <em>Tip: ${escapeHtml(q.tip)}</em></p>
+                        <div style="background: var(--bg-main); border: 1px solid var(--card-border); border-left: 4px solid var(--primary-blue); padding: 16px; border-radius: 12px;">
+                            <strong style="font-size: 14px; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 6px; line-height: 1.4;">Q${idx + 1}: ${escapeHtml(q.question)}</strong>
+                            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 0;">💡 <em>Tip: ${escapeHtml(q.tip)}</em></p>
                         </div>
                     `).join('')}
                 </div>
             </div>
         ` : ''}
 
-        <hr>
+        <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 24px 0;">
 
         <div class="job-actions">
             <a class="button primary"
@@ -118,17 +118,17 @@ async function loadJob() {
                Apply Direct 🚀
             </a>
 
-            <button class="button secondary" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1d4ed8; font-weight: 700;"
+            <button type="button" class="button ai-btn"
                     onclick="generateOutreachEmail()">
                 ✉️ AI Outreach Email
             </button>
 
-            <button class="button secondary"
+            <button type="button" class="button secondary"
                     onclick="recordAction('saved')">
                 📌 Save / Bookmark
             </button>
 
-            <button class="button secondary"
+            <button type="button" class="button secondary"
                     onclick="downloadCalendarEvent('${escapeHtml(job.title)}', '${escapeHtml(job.company)}')">
                 📅 Add to Calendar (.ics)
             </button>
