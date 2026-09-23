@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}My Applications — SmartJobs{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <h1 style="font-size: 24px; font-weight: 800;">My Applications & Saved Jobs</h1>
+    <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Track your applications and manage your job searches.</p>
+</div>
+
+<!-- Tab Pills -->
+<div style="display: flex; gap: 12px; margin-bottom: 24px;">
+    <button id="tabAppliedBtn" class="btn-hero" style="background: var(--primary-blue); color: white;" onclick="switchTab('applied')">
+        Applications (<span id="tabAppliedCount">0</span>)
+    </button>
+    <button id="tabSavedBtn" class="btn-hero" style="background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--card-border);" onclick="switchTab('saved')">
+        Saved Jobs (<span id="tabSavedCount">0</span>)
+    </button>
+</div>
+
+<!-- 4 KPI Stat Cards -->
+<section class="kpi-grid-4">
+    <div class="kpi-card">
+        <div>
+            <div class="kpi-title">Total Applied</div>
+            <div id="statTotalApplied" class="kpi-value">0</div>
+        </div>
+        <div class="kpi-icon" style="background: #eff6ff; color: #2563eb;">🚀</div>
+    </div>
+
+    <div class="kpi-card">
+        <div>
+            <div class="kpi-title">Under Review</div>
+            <div id="statUnderReview" class="kpi-value">0</div>
+        </div>
+        <div class="kpi-icon" style="background: #fef3c7; color: #d97706;">⏱️</div>
+    </div>
+
+    <div class="kpi-card">
+        <div>
+            <div class="kpi-title">Interview</div>
+            <div id="statInterview" class="kpi-value">0</div>
+        </div>
+        <div class="kpi-icon" style="background: #dcfce7; color: #15803d;">📅</div>
+    </div>
+
+    <div class="kpi-card">
+        <div>
+            <div class="kpi-title">Rejected</div>
+            <div id="statRejected" class="kpi-value">0</div>
+        </div>
+        <div class="kpi-icon" style="background: #fee2e2; color: #dc2626;">❌</div>
+    </div>
+</section>
+
+<!-- Applications Rows List -->
+<section id="applicationsList">
+    <p>Loading your applications...</p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentTab = 'applied';
+let rawApplications = [];
+
+async function loadApplications() {
+    const container = document.getElementById("applicationsList");
+    try {
+        const response = await fetch("/api/jobs/my-applications");
+        if (!response.ok) {
+            container.innerHTML = `<div class="card"><p>Failed to load applications.</p></div>`;
+            return;
+        }
+        rawApplications = await response.json();
+        updateKpiCounts();
+        renderList();
+    } catch (err) {
+        container.innerHTML = `<div class="card"><p>Network error loading applications.</p></div>`;
+    }
+}
+
+function updateKpiCounts() {
+    let appliedCount = 0;
+    let savedCount = 0;
+    let reviewCount = 0;
+    let interviewCount = 0;
+    let rejectedCount = 0;
+
+    rawApplications.forEach(item => {
+        if (item.action === 'saved') {
+            savedCount++;
+        } else {
+            appliedCount++;
+            if (item.action === 'interviewing') interviewCount++;
+            else if (item.action === 'rejected') rejectedCount++;
+            else reviewCount++;
+        }
+    });
+
+    document.getElementById("tabAppliedCount").textContent = appliedCount;
+    document.getElementById("tabSavedCount").textContent = savedCount;
+
+    document.getElementById("statTotalApplied").textContent = appliedCount;
+    document.getElementById("statUnderReview").textContent = reviewCount;
+    document.getElementById("statInterview").textContent = interviewCount;
+    document.getElementById("statRejected").textContent = rejectedCount;
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    const btnApp = document.getElementById("tabAppliedBtn");
+    const btnSav = document.getElementById("tabSavedBtn");
+
+    if (tab === 'applied') {
+        btnApp.style.background = "var(--primary-blue)";
+        btnApp.style.color = "white";
+        btnSav.style.background = "var(--card-bg)";
+        btnSav.style.color = "var(--text-primary)";
+    } else {
+        btnSav.style.background = "var(--primary-blue)";
+        btnSav.style.color = "white";
+        btnApp.style.background = "var(--card-bg)";
+        btnApp.style.color = "var(--text-primary)";
+    }
+
+    renderList();
+}
+
+function renderList() {
+    const container = document.getElementById("applicationsList");
+
+    let filtered = rawApplications.filter(item => {
+        if (currentTab === 'applied') {
+            return item.action !== 'saved';
+        } else {
+            return item.action === 'saved';
+        }
+    });
+
+    if (!filtered.length) {
+        container.innerHTML = `
+            <div class="card" style="text-align: center; padding: 40px 24px;">
+                <h3>No ${currentTab === 'saved' ? 'saved jobs' : 'applications'} found</h3>
+                <p style="color: var(--text-secondary); margin-top: 4px;">Explore jobs on your dashboard to bookmark or apply!</p>
+                <a href="/dashboard" class="btn-hero" style="margin-top: 14px; display: inline-block;">Browse Dashboard</a>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = filtered.map(item => {
+        const job = item.job;
+        const currentAction = item.action;
+        const actionTime = item.created_at || "Recently";
+
+        let badgeClass = "status-under-review";
+        let badgeLabel = "Under Review";
+
+        if (currentAction === 'interviewing') {
+            badgeClass = "status-interview";
+            badgeLabel = "Interviewing";
+        } else if (currentAction === 'offered') {
+            badgeClass = "status-interview";
+            badgeLabel = "Offer Received";
+        } else if (currentAction === 'rejected') {
+            badgeClass = "status-rejected";
+            badgeLabel = "Rejected";
+        } else if (currentAction === 'saved') {
+            badgeClass = "status-saved";
+            badgeLabel = "Saved";
+        }
+
+        return `
+            <div class="app-list-row">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div class="company-logo" style="width: 42px; height: 42px; font-size: 16px;">
+                        ${escapeHtml((job.company || 'C')[0])}
+                    </div>
+                    <div>
+                        <h4 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">${escapeHtml(job.title)}</h4>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                            ${escapeHtml(job.company)} · ${escapeHtml(job.location || 'Remote')} · Applied on ${escapeHtml(actionTime)}
+                        </p>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <span class="status-badge ${badgeClass}">${badgeLabel}</span>
+                    <a href="/jobs/${job.id}" style="background: var(--bg-main); border: 1px solid var(--card-border); padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--text-primary);">
+                        View Details
+                    </a>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+function escapeHtml(value) {
+    return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+loadApplications();
+</script>
+{% endblock %}

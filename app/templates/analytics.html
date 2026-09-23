@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Market Analytics — SmartJobs{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+    <div>
+        <h1 style="font-size: 24px; font-weight: 800;">Job Market & Hiring Analytics</h1>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Explore trends, salaries and insights to plan your career better.</p>
+    </div>
+    <select style="padding: 8px 16px; border-radius: 10px; border: 1px solid var(--card-border); background: var(--card-bg); font-size: 13px; font-weight: 600; color: var(--text-primary);">
+        <option>Last 6 Months</option>
+        <option>Last 3 Months</option>
+        <option>This Year</option>
+    </select>
+</div>
+
+<!-- 4 Market KPI Cards -->
+<section class="kpi-grid-4">
+    <div class="kpi-card">
+        <div>
+            <div class="kpi-title">Total Job Postings</div>
+            <div id="statTotalJobs" class="kpi-value">3,420</div>
+            <span style="font-size: 11px; font-weight: 700; color: #16a34a; margin-top: 4px; display: inline-block;">↑ 12% vs last month</span>
+        </div>
+        <div class="kpi-icon" style="background: #ecfdf5; color: #047857;">📈</div>
+    </div>
+
+    <div class="kpi-card">
+        <div>
+            <div class="kpi-title">Avg. Salary (CTC)</div>
+            <div class="kpi-value">₹ 6.8 LPA</div>
+            <span style="font-size: 11px; font-weight: 700; color: #16a34a; margin-top: 4px; display: inline-block;">↑ 8% vs industry avg</span>
+        </div>
+        <div class="kpi-icon" style="background: #eff6ff; color: #2563eb;">💵</div>
+    </div>
+
+    <div class="kpi-card">
+        <div>
+            <div class="kpi-title">Top Hiring Companies</div>
+            <div class="kpi-value">185</div>
+            <span style="font-size: 11px; font-weight: 700; color: #9333ea; margin-top: 4px; display: inline-block;">↑ 15% active recruiters</span>
+        </div>
+        <div class="kpi-icon" style="background: #f3e8ff; color: #9333ea;">🏢</div>
+    </div>
+
+    <div class="kpi-card">
+        <div>
+            <div class="kpi-title">Demand Growth</div>
+            <div class="kpi-value">12.4%</div>
+            <span style="font-size: 11px; font-weight: 700; color: #16a34a; margin-top: 4px; display: inline-block;">↑ 3% tech roles</span>
+        </div>
+        <div class="kpi-icon" style="background: #ecfdf5; color: #047857;">⚡</div>
+    </div>
+</section>
+
+<!-- 2-Column Analytics Visualizations Grid -->
+<div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px;">
+    
+    <!-- Left Column: Trend & Top Companies -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+        
+        <!-- Job Postings Trend SVG Area Chart -->
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 16px; font-weight: 800;">Job Postings Trend</h3>
+                <span style="font-size: 12px; font-weight: 700; color: #2563eb;">2,850 jobs (Peak Jun 2025)</span>
+            </div>
+
+            <!-- SVG Smooth Area Curve -->
+            <div style="width: 100%; height: 180px; position: relative; margin-bottom: 12px;">
+                <svg viewBox="0 0 500 150" style="width: 100%; height: 100%; overflow: visible;">
+                    <defs>
+                        <linearGradient id="gradTrend" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#2563eb" stop-opacity="0.3"/>
+                            <stop offset="100%" stop-color="#2563eb" stop-opacity="0.0"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 0 120 Q 80 130 150 100 T 300 40 T 420 90 T 500 70 L 500 150 L 0 150 Z" fill="url(#gradTrend)"/>
+                    <path d="M 0 120 Q 80 130 150 100 T 300 40 T 420 90 T 500 70" fill="none" stroke="#2563eb" stroke-width="3"/>
+                    <circle cx="300" cy="40" r="5" fill="#2563eb"/>
+                </svg>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-secondary);">
+                <span>Mar</span>
+                <span>Apr</span>
+                <span>May</span>
+                <span>Jun</span>
+                <span>Jul</span>
+                <span>Aug</span>
+            </div>
+        </section>
+
+        <!-- Top Companies Hiring Grid -->
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 16px; font-weight: 800;">Top Companies Hiring</h3>
+                <a href="/dashboard" style="font-size: 12px; font-weight: 700; color: #2563eb;">View All →</a>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
+                <div style="background: var(--bg-main); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px; text-align: center;">
+                    <div style="font-size: 20px; font-weight: 800; color: #ea4335; margin-bottom: 4px;">G</div>
+                    <strong style="font-size: 12px; display: block; color: var(--text-primary);">Google</strong>
+                    <span style="font-size: 11px; color: var(--text-secondary);">42 jobs</span>
+                </div>
+
+                <div style="background: var(--bg-main); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px; text-align: center;">
+                    <div style="font-size: 20px; font-weight: 800; color: #00a4ef; margin-bottom: 4px;">M</div>
+                    <strong style="font-size: 12px; display: block; color: var(--text-primary);">Microsoft</strong>
+                    <span style="font-size: 11px; color: var(--text-secondary);">35 jobs</span>
+                </div>
+
+                <div style="background: var(--bg-main); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px; text-align: center;">
+                    <div style="font-size: 20px; font-weight: 800; color: #ff9900; margin-bottom: 4px;">a</div>
+                    <strong style="font-size: 12px; display: block; color: var(--text-primary);">Amazon</strong>
+                    <span style="font-size: 11px; color: var(--text-secondary);">29 jobs</span>
+                </div>
+
+                <div style="background: var(--bg-main); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px; text-align: center;">
+                    <div style="font-size: 20px; font-weight: 800; color: #2563eb; margin-bottom: 4px;">t</div>
+                    <strong style="font-size: 12px; display: block; color: var(--text-primary);">TCS</strong>
+                    <span style="font-size: 11px; color: var(--text-secondary);">24 jobs</span>
+                </div>
+
+                <div style="background: var(--bg-main); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px; text-align: center;">
+                    <div style="font-size: 20px; font-weight: 800; color: #a21caf; margin-bottom: 4px;">&gt;</div>
+                    <strong style="font-size: 12px; display: block; color: var(--text-primary);">Accenture</strong>
+                    <span style="font-size: 11px; color: var(--text-secondary);">20 jobs</span>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Right Column: Skills Donut & Popular Roles -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+
+        <!-- Top Skills in Demand (Donut Chart Visual) -->
+        <section class="card">
+            <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Top Skills in Demand</h3>
+
+            <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 16px;">
+                <!-- Donut graphic -->
+                <div style="position: relative; width: 110px; height: 110px; flex-shrink: 0;">
+                    <svg viewBox="0 0 36 36" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+                        <circle cx="18" cy="18" r="15.915" fill="none" stroke="#2563eb" stroke-width="3.8" stroke-dasharray="28 72" stroke-dashoffset="0"/>
+                        <circle cx="18" cy="18" r="15.915" fill="none" stroke="#3b82f6" stroke-width="3.8" stroke-dasharray="19 81" stroke-dashoffset="-28"/>
+                        <circle cx="18" cy="18" r="15.915" fill="none" stroke="#f59e0b" stroke-width="3.8" stroke-dasharray="12 88" stroke-dashoffset="-47"/>
+                        <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" stroke-width="3.8" stroke-dasharray="10 90" stroke-dashoffset="-59"/>
+                        <circle cx="18" cy="18" r="15.915" fill="none" stroke="#8b5cf6" stroke-width="3.8" stroke-dasharray="31 69" stroke-dashoffset="-69"/>
+                    </svg>
+                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <span style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase;">Total</span>
+                        <strong style="font-size: 13px; color: var(--text-primary);">3,420</strong>
+                    </div>
+                </div>
+
+                <!-- Skill legend -->
+                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600;">
+                    <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #2563eb;"></span> Python (28%)</div>
+                    <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #3b82f6;"></span> JavaScript (19%)</div>
+                    <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b;"></span> SQL (12%)</div>
+                    <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span> React (10%)</div>
+                    <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #8b5cf6;"></span> Data Analysis (8%)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Popular Job Roles Demand Bars -->
+        <section class="card">
+            <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Popular Job Roles</h3>
+
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+                        <span>Software Developer</span>
+                        <span style="color: #2563eb;">42%</span>
+                    </div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 42%;"></div></div>
+                </div>
+
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+                        <span>Data Analyst</span>
+                        <span style="color: #2563eb;">28%</span>
+                    </div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 28%;"></div></div>
+                </div>
+
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+                        <span>Frontend Developer</span>
+                        <span style="color: #2563eb;">18%</span>
+                    </div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 18%;"></div></div>
+                </div>
+
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+                        <span>Backend Developer</span>
+                        <span style="color: #2563eb;">12%</span>
+                    </div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 12%;"></div></div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+</div>
+{% endblock %}

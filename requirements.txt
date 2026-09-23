@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+sqlalchemy>=2.0
+pydantic>=2.0
+pydantic-settings
+python-dotenv
+jinja2
+python-multipart
+passlib[bcrypt]
+python-jose[cryptography]
+httpx
+beautifulsoup4
+apscheduler
+python-telegram-bot[job-queue]
+psycopg[binary]
+email-validator
+pytest

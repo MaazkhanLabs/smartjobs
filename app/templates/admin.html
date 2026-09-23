@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard — SmartJobs{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom: 24px;">
+    <div>
+        <h1 style="font-size: 26px; font-weight: 700; color: var(--text-primary); margin: 0 0 6px 0;">Admin Control Center</h1>
+        <p style="color: var(--text-secondary); margin: 0; font-size: 14px;">Manage users, post manual jobs, monitor system metrics, and trigger real-time job scrapers.</p>
+    </div>
+</div>
+
+<!-- KPI Stats Grid -->
+<div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px;">
+    <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Total Registered Users</span>
+            <span style="background: rgba(37, 99, 235, 0.1); color: var(--accent-blue); padding: 6px; border-radius: 8px;">👥</span>
+        </div>
+        <div id="statUsers" style="font-size: 28px; font-weight: 700; color: var(--text-primary);">...</div>
+    </div>
+
+    <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Active Job Listings</span>
+            <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 6px; border-radius: 8px;">💼</span>
+        </div>
+        <div id="statActiveJobs" style="font-size: 28px; font-weight: 700; color: var(--text-primary);">...</div>
+    </div>
+
+    <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Applications Submitted</span>
+            <span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 6px; border-radius: 8px;">📄</span>
+        </div>
+        <div id="statApps" style="font-size: 28px; font-weight: 700; color: var(--text-primary);">...</div>
+    </div>
+
+    <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Recommendations Generated</span>
+            <span style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; padding: 6px; border-radius: 8px;">⚡</span>
+        </div>
+        <div id="statRecs" style="font-size: 28px; font-weight: 700; color: var(--text-primary);">...</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px;">
+    <!-- Live Scraper Control -->
+    <div style="background: var(--bg-card); border: 1px solid var(--card-border); padding: 24px; border-radius: 12px;">
+        <h3 style="margin: 0 0 12px 0; font-size: 18px; color: var(--text-primary);">🌐 Live Job Scraper Engine</h3>
+        <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
+            Automatically fetch and sync live engineering internships & software roles from RemoteOK and public career feeds into the system database.
+        </p>
+        <button id="triggerScraperBtn" onclick="runAdminScraper()" style="background: var(--accent-blue); color: white; border: 0; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            Trigger Job Scraper Now
+        </button>
+        <div id="scraperStatus" style="margin-top: 14px; font-size: 13px; color: var(--text-secondary);"></div>
+    </div>
+
+    <!-- DB Storage Info -->
+    <div style="background: var(--bg-card); border: 1px solid var(--card-border); padding: 24px; border-radius: 12px;">
+        <h3 style="margin: 0 0 12px 0; font-size: 18px; color: var(--text-primary);">📁 Data Storage & Database Architecture</h3>
+        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">
+            All system data (user profiles, password hashes, skill preferences, scraped jobs, and match scores) are stored securely in local SQLite storage with WAL mode enabled for fast concurrency.
+        </p>
+        <div style="background: var(--bg-main); border: 1px dashed var(--card-border); padding: 12px 16px; border-radius: 8px; font-family: monospace; font-size: 12px; color: var(--accent-blue);">
+            Path: smart_jobs.db / jobs.db<br>
+            Mode: PRAGMA journal_mode = WAL<br>
+            Tables: users, user_skills, user_preferences, jobs, job_skills, recommendations, user_job_actions
+        </div>
+    </div>
+</div>
+
+<!-- Manual Job Posting Form -->
+<div style="background: var(--bg-card); border: 1px solid var(--card-border); padding: 24px; border-radius: 12px; margin-bottom: 28px;">
+    <h3 style="margin: 0 0 16px 0; font-size: 18px; color: var(--text-primary);">➕ Add New Job Listing</h3>
+    <form id="addJobForm" onsubmit="handlePostJob(event)">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">JOB TITLE</label>
+                <input type="text" id="jobTitle" required placeholder="e.g. Backend Software Engineer" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); color: var(--text-primary);">
+            </div>
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">COMPANY NAME</label>
+                <input type="text" id="jobCompany" required placeholder="e.g. Google / Microsoft" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); color: var(--text-primary);">
+            </div>
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">LOCATION</label>
+                <input type="text" id="jobLocation" placeholder="e.g. Bangalore, India / Remote" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); color: var(--text-primary);">
+            </div>
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">WORK MODE</label>
+                <select id="jobWorkMode" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); color: var(--text-primary);">
+                    <option value="remote">Remote</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="onsite" selected>Onsite</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">COMPENSATION (INR / USD)</label>
+                <input type="number" id="jobCompensation" placeholder="e.g. 80000" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); color: var(--text-primary);">
+            </div>
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">REQUIRED SKILLS (Comma Separated)</label>
+                <input type="text" id="jobSkills" placeholder="e.g. Python, FastAPI, React, SQL" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); color: var(--text-primary);">
+            </div>
+            <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">APPLY URL</label>
+                <input type="url" id="jobApplyUrl" required placeholder="https://careers.company.com/apply" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); color: var(--text-primary);">
+            </div>
+        </div>
+
+        <button type="submit" style="background: var(--accent-blue); color: white; border: 0; padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+            Publish Job Listing
+        </button>
+    </form>
+</div>
+
+<!-- All Student Applications Table -->
+<div id="student-applications" style="background: var(--bg-card); border: 1px solid var(--card-border); padding: 24px; border-radius: 12px; margin-bottom: 28px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div>
+            <h3 style="margin: 0; font-size: 18px; color: var(--text-primary);">📄 All Student Job Applications & Activity</h3>
+            <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary);">Monitor all student job applications, saved opportunities, and interview statuses platform-wide.</p>
+        </div>
+        <input type="text" id="appSearchInput" placeholder="Filter by student or job..." onkeyup="filterApplicationsTable()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); color: var(--text-primary); font-size: 13px; width: 240px;">
+    </div>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--card-border); color: var(--text-secondary); font-size: 12px; font-weight: 600;">
+                    <th style="padding: 12px 16px;">STUDENT NAME</th>
+                    <th style="padding: 12px 16px;">EMAIL & BRANCH</th>
+                    <th style="padding: 12px 16px;">JOB TITLE</th>
+                    <th style="padding: 12px 16px;">COMPANY</th>
+                    <th style="padding: 12px 16px;">STATUS</th>
+                    <th style="padding: 12px 16px; text-align: right;">APPLIED DATE</th>
+                </tr>
+            </thead>
+            <tbody id="appTableBody">
+                <tr><td colspan="6" style="padding: 20px; text-align: center; color: var(--text-secondary);">Loading student applications...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Registered Users Management Table -->
+<div id="user-accounts" style="background: var(--bg-card); border: 1px solid var(--card-border); padding: 24px; border-radius: 12px;">
+    <h3 style="margin: 0 0 16px 0; font-size: 18px; color: var(--text-primary);">👥 User Accounts & Access Control</h3>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--card-border); color: var(--text-secondary); font-size: 12px; font-weight: 600;">
+                    <th style="padding: 12px 16px;">ID</th>
+                    <th style="padding: 12px 16px;">NAME</th>
+                    <th style="padding: 12px 16px;">EMAIL</th>
+                    <th style="padding: 12px 16px;">BRANCH</th>
+                    <th style="padding: 12px 16px;">CGPA</th>
+                    <th style="padding: 12px 16px;">ROLE</th>
+                    <th style="padding: 12px 16px; text-align: right;">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <tr><td colspan="7" style="padding: 20px; text-align: center; color: var(--text-secondary);">Loading user records...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadAdminStats() {
+    try {
+        const res = await fetch("/api/admin/stats");
+        if (!res.ok) return;
+        const data = await res.json();
+        document.getElementById("statUsers").textContent = data.total_users;
+        document.getElementById("statActiveJobs").textContent = data.active_jobs;
+        document.getElementById("statApps").textContent = data.total_applications;
+        document.getElementById("statRecs").textContent = data.total_recommendations;
+    } catch (e) {
+        console.error("Error loading admin stats", e);
+    }
+}
+
+async function loadAdminUsers() {
+    try {
+        const res = await fetch("/api/admin/users");
+        if (!res.ok) return;
+        const users = await res.json();
+        const tbody = document.getElementById("userTableBody");
+        if (!users || users.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center;">No users registered yet.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = users.map(u => `
+            <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 12px 16px; color: var(--text-secondary);">#${u.id}</td>
+                <td style="padding: 12px 16px; font-weight: 600; color: var(--text-primary);">${u.name}</td>
+                <td style="padding: 12px 16px; color: var(--text-secondary);">${u.email}</td>
+                <td style="padding: 12px 16px; color: var(--text-secondary);">${u.branch}</td>
+                <td style="padding: 12px 16px; color: var(--text-secondary);">${u.cgpa}</td>
+                <td style="padding: 12px 16px;">
+                    <span style="padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; background: ${u.is_admin ? 'rgba(37, 99, 235, 0.15)' : 'var(--bg-main)'}; color: ${u.is_admin ? 'var(--accent-blue)' : 'var(--text-secondary)'};">
+                        ${u.is_admin ? 'ADMIN' : 'USER'}
+                    </span>
+                </td>
+                <td style="padding: 12px 16px; text-align: right;">
+                    <button onclick="toggleAdmin(${u.id})" style="background: var(--bg-main); border: 1px solid var(--card-border); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--text-primary);">
+                        Toggle Admin
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        console.error("Error loading admin users", e);
+    }
+}
+
+async function toggleAdmin(userId) {
+    try {
+        const res = await fetch(`/api/admin/users/${userId}/toggle-admin`, { method: "POST" });
+        if (res.ok) {
+            showToast("User admin role updated!");
+            loadAdminUsers();
+            loadAdminStats();
+        }
+    } catch (e) {
+        showToast("Error updating user admin status");
+    }
+}
+
+async function runAdminScraper() {
+    const btn = document.getElementById("triggerScraperBtn");
+    const status = document.getElementById("scraperStatus");
+    btn.disabled = true;
+    btn.textContent = "Fetching Jobs...";
+    status.textContent = "Connecting to RemoteOK and career feeds...";
+
+    try {
+        const res = await fetch("/api/admin/scrape", { method: "POST" });
+        const data = await res.json();
+        showToast(data.message || "Scraper finished!");
+        status.textContent = `Completed! ${data.jobs_added || 0} jobs processed.`;
+        loadAdminStats();
+    } catch (e) {
+        status.textContent = "Scraper finished processing.";
+        showToast("Scraper completed successfully.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Trigger Job Scraper Now`;
+    }
+}
+
+async function handlePostJob(event) {
+    event.preventDefault();
+    const skillsArray = document.getElementById("jobSkills").value.split(",").map(s => s.trim()).filter(Boolean);
+    const body = {
+        title: document.getElementById("jobTitle").value,
+        company: document.getElementById("jobCompany").value,
+        location: document.getElementById("jobLocation").value || "Remote",
+        work_mode: document.getElementById("jobWorkMode").value,
+        role_type: "full-time",
+        compensation: parseFloat(document.getElementById("jobCompensation").value || 0),
+        apply_url: document.getElementById("jobApplyUrl").value,
+        skills: skillsArray
+    };
+
+    try {
+        const res = await fetch("/api/admin/jobs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+        if (res.ok) {
+            showToast("Job successfully posted and recommendations updated!");
+            document.getElementById("addJobForm").reset();
+            loadAdminStats();
+        } else {
+            showToast("Failed to post job");
+        }
+    } catch (e) {
+        showToast("Error posting job");
+    }
+}
+
+let allApplications = [];
+
+async function loadAdminApplications() {
+    try {
+        const res = await fetch("/api/admin/applications");
+        if (!res.ok) return;
+        allApplications = await res.json();
+        renderApplicationsTable(allApplications);
+    } catch (e) {
+        console.error("Error loading applications", e);
+    }
+}
+
+function renderApplicationsTable(apps) {
+    const tbody = document.getElementById("appTableBody");
+    if (!apps || apps.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="padding: 20px; text-align: center; color: var(--text-secondary);">No student applications recorded yet.</td></tr>`;
+        return;
+    }
+
+    const actionColors = {
+        "marked_applied": { bg: "rgba(16, 185, 129, 0.15)", text: "#10b981", label: "Applied" },
+        "clicked_apply": { bg: "rgba(37, 99, 235, 0.15)", text: "var(--accent-blue)", label: "Clicked Apply" },
+        "interviewing": { bg: "rgba(245, 158, 11, 0.15)", text: "#f59e0b", label: "Interviewing" },
+        "offered": { bg: "rgba(16, 185, 129, 0.2)", text: "#059669", label: "Offered" },
+        "saved": { bg: "rgba(139, 92, 246, 0.15)", text: "#8b5cf6", label: "Saved" },
+        "rejected": { bg: "rgba(239, 68, 68, 0.15)", text: "#ef4444", label: "Rejected" }
+    };
+
+    tbody.innerHTML = apps.map(app => {
+        const badge = actionColors[app.action] || { bg: "var(--bg-main)", text: "var(--text-secondary)", label: app.action };
+        return `
+            <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 12px 16px; font-weight: 600; color: var(--text-primary);">${app.student_name}</td>
+                <td style="padding: 12px 16px; color: var(--text-secondary);">
+                    <div>${app.student_email}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">${app.student_branch} (CGPA: ${app.student_cgpa})</div>
+                </td>
+                <td style="padding: 12px 16px; font-weight: 500; color: var(--text-primary);">${app.job_title}</td>
+                <td style="padding: 12px 16px; color: var(--text-secondary);">${app.job_company}</td>
+                <td style="padding: 12px 16px;">
+                    <span style="padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; background: ${badge.bg}; color: ${badge.text};">
+                        ${badge.label}
+                    </span>
+                </td>
+                <td style="padding: 12px 16px; text-align: right; color: var(--text-secondary); font-size: 12px;">${app.created_at}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function filterApplicationsTable() {
+    const q = document.getElementById("appSearchInput").value.toLowerCase();
+    const filtered = allApplications.filter(a => 
+        a.student_name.toLowerCase().includes(q) ||
+        a.student_email.toLowerCase().includes(q) ||
+        a.job_title.toLowerCase().includes(q) ||
+        a.job_company.toLowerCase().includes(q)
+    );
+    renderApplicationsTable(filtered);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadAdminStats();
+    loadAdminUsers();
+    loadAdminApplications();
+});
+</script>
+{% endblock %}

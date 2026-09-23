@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Profile — SmartJobs{% endblock %}
+
+{% block content %}
+
+<!-- Header Row -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+    <div>
+        <h1 style="font-size: 24px; font-weight: 800;">Edit Your Profile</h1>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Keep your profile up to date to get better job recommendations.</p>
+    </div>
+    <div>
+        <button id="saveChangesBtn" class="btn-hero" style="background: var(--primary-blue); color: white; border: 0;" onclick="saveAllProfileData()">
+            Save Changes
+        </button>
+    </div>
+</div>
+
+<div class="profile-grid-2">
+    <!-- Left Column: User Card & Sub-navigation -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="card profile-sidebar-card">
+            <div class="profile-avatar-large">
+                {{ user.name[0] if user and user.name else 'M' }}
+            </div>
+            <h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary);">{{ user.name if user else 'Maaz Khan' }}</h2>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">{{ user.branch or 'B.Sc. Computer Science' }}</p>
+            <p style="font-size: 11px; color: var(--text-secondary);">Bhavans College</p>
+
+            <div style="margin-top: 16px; text-align: left;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+                    <span>Profile Strength</span>
+                    <span style="color: #2563eb;">75%</span>
+                </div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 75%;"></div></div>
+            </div>
+        </div>
+
+        <div class="card" style="padding: 12px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <a href="#personal" class="sidebar-link active" style="padding: 10px 14px;">
+                    👤 Personal Information
+                </a>
+                <a href="#education" class="sidebar-link" style="padding: 10px 14px;">
+                    🎓 Education
+                </a>
+                <a href="#skillsSection" class="sidebar-link" style="padding: 10px 14px;">
+                    ⚙️ Skills
+                </a>
+                <a href="#preferencesSection" class="sidebar-link" style="padding: 10px 14px;">
+                    ❤️ Preferences
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Form Sections -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+        
+        <!-- Personal Information Section -->
+        <section id="personal" class="card">
+            <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Personal Information</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Full Name</label>
+                    <input id="name" value="{{ user.name if user else 'Maaz Khan' }}" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Email</label>
+                    <input id="email" value="{{ user.email if user else 'maazkhan@gmail.com' }}" readonly style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px; color: var(--text-secondary);">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Phone Number</label>
+                    <input id="phone" value="+91 98765 43210" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Location</label>
+                    <input id="location" value="Mumbai, India" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px;">
+                </div>
+            </div>
+        </section>
+
+        <!-- Education Details Section -->
+        <section id="education" class="card">
+            <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Education Details</h3>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 14px;">
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">College/University</label>
+                    <input id="college" value="Bhavans College" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Degree / Branch</label>
+                    <input id="branch" value="{{ user.branch or 'B.Sc. Computer Science' }}" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Year</label>
+                    <input id="year" type="number" value="{{ user.year or 1 }}" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">CGPA</label>
+                    <input id="cgpa" type="number" step="0.01" value="{{ user.cgpa or 6.5 }}" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px;">
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section with Tag Pills -->
+        <section id="skillsSection" class="card">
+            <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 12px;">Skills</h3>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">Add skills to match relevant job postings (e.g. Python, React, SQL...)</p>
+            
+            <input id="skillsInput" placeholder="Type a skill and press Enter" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px; margin-bottom: 14px;" value="{% if user.skills %}{{ user.skills | map(attribute='skill') | join(', ') }}{% else %}Python, JavaScript, SQL, FastAPI, HTML, CSS{% endif %}">
+
+            <div id="skillsPillsContainer" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <!-- Tag Pills rendered dynamically -->
+            </div>
+        </section>
+
+        <!-- Preferences Section -->
+        <section id="preferencesSection" class="card">
+            <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Job Preferences</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Preferred Roles</label>
+                    <input id="roles" value="{{ user.preferences.roles if user.preferences else 'Python Developer, Data Analyst' }}" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Preferred Locations</label>
+                    <input id="locations" value="{{ user.preferences.locations if user.preferences else 'Mumbai, Remote' }}" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Work Mode</label>
+                    <select id="workMode" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px;">
+                        <option value="any">Any Work Mode</option>
+                        <option value="remote" selected>Remote</option>
+                        <option value="hybrid">Hybrid</option>
+                        <option value="onsite">Onsite</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Min Stipend / Salary</label>
+                    <input id="minimum" type="number" value="{{ user.preferences.min_compensation if user.preferences else 0 }}" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); width: 100%; font-size: 13px;">
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function renderSkillPills() {
+    const raw = document.getElementById("skillsInput").value;
+    const skills = raw.split(",").map(s => s.trim()).filter(Boolean);
+    const container = document.getElementById("skillsPillsContainer");
+
+    container.innerHTML = skills.map(skill => `
+        <span class="skill-pill" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-weight: 700; padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+            ${escapeHtml(skill)}
+            <span onclick="removeSkill('${escapeHtml(skill)}')" style="cursor: pointer; opacity: 0.7;">✕</span>
+        </span>
+    `).join("");
+}
+
+function removeSkill(skillToRemove) {
+    const raw = document.getElementById("skillsInput").value;
+    let skills = raw.split(",").map(s => s.trim()).filter(Boolean);
+    skills = skills.filter(s => s.toLowerCase() !== skillToRemove.toLowerCase());
+    document.getElementById("skillsInput").value = skills.join(", ");
+    renderSkillPills();
+}
+
+document.getElementById("skillsInput").addEventListener("input", renderSkillPills);
+
+async function saveAllProfileData() {
+    const btn = document.getElementById("saveChangesBtn");
+    btn.disabled = true;
+    btn.textContent = "Saving...";
+
+    try {
+        // Save Profile
+        await fetch("/api/profile", {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                name: document.getElementById("name").value,
+                branch: document.getElementById("branch").value,
+                year: Number(document.getElementById("year").value || 1),
+                cgpa: Number(document.getElementById("cgpa").value || 6.5)
+            })
+        });
+
+        // Save Skills
+        const skills = document.getElementById("skillsInput").value.split(",").map(s => s.trim()).filter(Boolean);
+        await fetch("/api/profile/skills", {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({skills})
+        });
+
+        // Save Preferences
+        const roles = document.getElementById("roles").value.split(",").map(s => s.trim()).filter(Boolean);
+        const locations = document.getElementById("locations").value.split(",").map(s => s.trim()).filter(Boolean);
+        await fetch("/api/profile/preferences", {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                roles,
+                locations,
+                work_mode: document.getElementById("workMode").value,
+                min_compensation: Number(document.getElementById("minimum").value || 0)
+            })
+        });
+
+        if (typeof showToast === 'function') showToast("✓ Profile changes saved successfully!");
+    } catch(err) {
+        if (typeof showToast === 'function') showToast("Error saving profile changes.");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Save Changes";
+    }
+}
+
+function escapeHtml(value) {
+    return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+renderSkillPills();
+</script>
+{% endblock %}

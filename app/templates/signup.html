@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Sign up — SmartJobs{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <h1>Create student profile</h1>
+
+    <form id="signupForm">
+        <label>Name</label>
+        <input id="name" required>
+
+        <label>Email</label>
+        <input id="email" type="email" required>
+
+        <label>Password</label>
+        <input id="password" type="password" minlength="6" required>
+
+        <label>Branch</label>
+        <input id="branch" placeholder="Computer Science">
+
+        <label>Year</label>
+        <input id="year" type="number" min="1" max="6">
+
+        <label>CGPA</label>
+        <input id="cgpa" type="number" min="0" max="10" step="0.01">
+
+        <button id="submitBtn" class="primary" type="submit">Create account</button>
+    </form>
+
+    <p id="message" style="margin-top: 12px; font-weight: 500; color: #dc2626;"></p>
+
+    <p style="margin-top: 16px;">
+        Already registered?
+        <a href="/login">Login</a>
+    </p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById("signupForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const submitBtn = document.getElementById("submitBtn");
+    const messageEl = document.getElementById("message");
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Creating account...";
+    messageEl.textContent = "";
+
+    const yearValue = document.getElementById("year").value;
+    const cgpaValue = document.getElementById("cgpa").value;
+
+    try {
+        const response = await fetch("/api/auth/signup", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value,
+                branch: document.getElementById("branch").value || null,
+                year: yearValue ? Number(yearValue) : null,
+                cgpa: cgpaValue ? Number(cgpaValue) : null
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            window.location.href = "/dashboard";
+        } else {
+            let errorMsg = "Signup failed";
+            if (typeof data.detail === "string") {
+                errorMsg = data.detail;
+            } else if (Array.isArray(data.detail)) {
+                errorMsg = data.detail.map(err => err.msg || err).join(", ");
+            }
+            messageEl.textContent = errorMsg;
+        }
+    } catch (err) {
+        messageEl.textContent = "Network error. Please check server connection.";
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Create account";
+    }
+});
+</script>
+{% endblock %}

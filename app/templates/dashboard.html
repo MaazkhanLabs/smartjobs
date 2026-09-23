@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — SmartJobs{% endblock %}
+
+{% block content %}
+
+<!-- Hero Banner -->
+<section class="hero-banner">
+    <div>
+        <p style="text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: #bfdbfe; margin-bottom: 4px;">Personalized Career Feed</p>
+        <h1>Hello, {{ user.name if user and user.name else 'Maaz' }}! 👋</h1>
+        <p style="margin-top: 4px;">Your skills + the right opportunities = Your dream career.</p>
+        <p style="font-size: 13px; color: #93c5fd; margin-top: 2px;">Explore internships and job opportunities tailored for you.</p>
+    </div>
+    <div>
+        <a href="/profile" class="btn-hero">Complete Your Profile →</a>
+    </div>
+</section>
+
+<!-- Profile Summary Widget -->
+<section class="card">
+    <h2 style="font-size: 16px; font-weight: 800; margin-bottom: 16px; color: var(--text-primary);">Profile Summary</h2>
+    
+    <div class="summary-container">
+        <!-- Gauge Ring -->
+        <div class="gauge-wrapper">
+            <div class="gauge-circle">
+                <div class="gauge-text">75%</div>
+            </div>
+            <div>
+                <strong style="font-size: 13px; font-weight: 800; display: block;">Profile Strength</strong>
+                <span style="font-size: 12px; color: #059669; font-weight: 600;">Great! You're almost there.</span>
+                <div style="margin-top: 8px;">
+                    <a href="/profile" style="display: inline-block; background: #eff6ff; color: #2563eb; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 8px;">Edit Profile</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid-4">
+            <div class="stat-item">
+                <strong>Branch</strong>
+                <span>{{ user.branch or 'Computer Science' }}</span>
+            </div>
+            <div class="stat-item">
+                <strong>Year</strong>
+                <span>{{ user.year or '1' }}</span>
+            </div>
+            <div class="stat-item">
+                <strong>CGPA</strong>
+                <span>{{ user.cgpa or '6.5' }}</span>
+            </div>
+            <div class="stat-item">
+                <strong>Skills</strong>
+                <span style="font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">
+                    {% if user.skills %}
+                        {{ user.skills | map(attribute="skill") | join(", ") }}
+                    {% else %}
+                        fastapi, javascript, python, sql
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filters & Live Fetch Row -->
+<section class="card" style="padding: 20px 24px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 14px;">
+        <div>
+            <h2 style="font-size: 18px; font-weight: 800;">Recommended Opportunities</h2>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Jobs and internships based on your skills and preferences</p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <span id="liveJobStatus" style="font-size: 12px; font-weight: 700; color: #059669;"></span>
+            <button id="fetchLiveBtn" class="btn-hero" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff;" onclick="fetchLiveJobs()">
+                ⚡ Fetch Live Jobs (LinkedIn & Internshala)
+            </button>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px;">
+        <input id="search" placeholder="Search role, skill or company" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); font-size: 13px;" onkeypress="if(event.key==='Enter') loadJobs()">
+        <input id="location" placeholder="Location (e.g. Remote, Mumbai)" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); font-size: 13px;" onkeypress="if(event.key==='Enter') loadJobs()">
+        <select id="workMode" onchange="loadJobs()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-main); font-size: 13px;">
+            <option value="">Any work mode</option>
+            <option value="remote">Remote</option>
+            <option value="hybrid">Hybrid</option>
+            <option value="onsite">Onsite</option>
+        </select>
+        <button onclick="loadJobs()" style="background: var(--primary-blue); color: white; border: 0; padding: 8px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer;">Filter</button>
+    </div>
+</section>
+
+<!-- 3-Column Recommendations Grid -->
+<section id="jobs" class="grid-3">
+    <p>Loading recommendations...</p>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadJobs() {
+    const search = document.getElementById("search").value.trim();
+    const location = document.getElementById("location").value.trim();
+    const workMode = document.getElementById("workMode").value;
+
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    if (location) params.set("location", location);
+    if (workMode) params.set("work_mode", workMode);
+    params.set("limit", "50");
+
+    const container = document.getElementById("jobs");
+
+    let response = await fetch(`/api/jobs/recommended?${params.toString()}`);
+    let jobs = await response.json();
+
+    let filtered = jobs.filter(job => {
+        const text = `${job.title} ${job.company}`.toLowerCase();
+        const searchOk = !search || text.includes(search.toLowerCase());
+        const locationOk = !location || job.location.toLowerCase().includes(location.toLowerCase());
+        const modeOk = !workMode || job.work_mode.toLowerCase() === workMode.toLowerCase();
+        return searchOk && locationOk && modeOk;
+    });
+
+    if (!filtered.length) {
+        const allResponse = await fetch(`/api/jobs?${params.toString()}`);
+        const allJobs = await allResponse.json();
+
+        filtered = allJobs.filter(job => {
+            const text = `${job.title} ${job.company}`.toLowerCase();
+            const searchOk = !search || text.includes(search.toLowerCase());
+            const locationOk = !location || job.location.toLowerCase().includes(location.toLowerCase());
+            const modeOk = !workMode || job.work_mode.toLowerCase() === workMode.toLowerCase();
+            return searchOk && locationOk && modeOk;
+        }).map(j => ({ ...j, score: 0.5, explanation: "Available opportunity matching your query." }));
+    }
+
+    if (!filtered.length) {
+        container.innerHTML = `
+            <div class="card" style="grid-column: span 3; text-align: center; padding: 40px 24px;">
+                <h3>No matches found</h3>
+                <p style="color: var(--text-secondary); margin-top: 4px;">Try clearing your filter criteria or updating your skills in profile.</p>
+                <button class="btn-hero" style="margin-top: 14px; background: #eff6ff; color: #2563eb;" onclick="resetFilters()">Reset Filters</button>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = filtered.map(job => {
+        const skillsArr = job.skills && job.skills.length ? job.skills : ["Python", "FastAPI", "SQL"];
+        const compText = job.compensation > 0 ? `₹ ${job.compensation} / mo` : "Disclosed on Apply";
+
+        return `
+            <article class="job-card-modern">
+                <div class="job-badge-top">
+                    <span class="role-badge">${escapeHtml(job.role_type || 'internship')}</span>
+                    <button class="btn-bookmark" onclick="bookmarkJob(this, ${job.id})">♡</button>
+                </div>
+
+                <div class="company-logo-row">
+                    <div class="company-logo">${escapeHtml((job.company || 'C')[0])}</div>
+                    <span style="font-size: 13px; font-weight: 700; color: var(--text-secondary);">${escapeHtml(job.company)}</span>
+                </div>
+
+                <h3 class="job-title-modern">${escapeHtml(job.title)}</h3>
+
+                <p class="job-details-meta">
+                    📍 ${escapeHtml(job.location || 'Remote')} · ${escapeHtml(job.work_mode)} · ${compText}
+                </p>
+
+                <div class="skills-pill-group">
+                    ${skillsArr.slice(0, 3).map(s => `<span class="skill-pill">${escapeHtml(typeof s === 'object' ? s.skill : s)}</span>`).join('')}
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-top: auto;">
+                    <a class="btn-apply-full"
+                       href="${escapeHtml(job.apply_url)}"
+                       target="_blank"
+                       rel="noopener"
+                       onclick="recordAction(${job.id}, 'clicked_apply')">
+                       Apply Now
+                    </a>
+                    <a href="/jobs/${job.id}" style="background: var(--bg-main); border: 1px solid var(--card-border); padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">
+                       Details
+                    </a>
+                </div>
+            </article>
+        `;
+    }).join("");
+}
+
+async function fetchLiveJobs() {
+    const btn = document.getElementById("fetchLiveBtn");
+    const status = document.getElementById("liveJobStatus");
+
+    btn.disabled = true;
+    btn.textContent = "⏳ Fetching Jobs...";
+    status.textContent = "Connecting to LinkedIn & Internshala...";
+
+    try {
+        const response = await fetch("/api/jobs/fetch-real-jobs", { method: "POST" });
+        const data = await response.json();
+
+        if (response.ok) {
+            status.textContent = `✓ Fetched ${data.count || 0} live postings!`;
+            await loadJobs();
+        } else {
+            status.textContent = "Could not fetch live jobs.";
+        }
+    } catch (err) {
+        status.textContent = "Network error fetching live jobs.";
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "⚡ Fetch Live Jobs (LinkedIn & Internshala)";
+        setTimeout(() => { status.textContent = ""; }, 6000);
+    }
+}
+
+function resetFilters() {
+    document.getElementById("search").value = "";
+    document.getElementById("location").value = "";
+    document.getElementById("workMode").value = "";
+    loadJobs();
+}
+
+async function bookmarkJob(btn, jobId) {
+    btn.textContent = "♥";
+    btn.style.color = "#ef4444";
+    await recordAction(jobId, 'saved');
+    if (typeof showToast === 'function') showToast("📌 Saved to your bookmarks!");
+}
+
+async function recordAction(jobId, action) {
+    await fetch(`/api/jobs/${jobId}/action`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({action})
+    });
+}
+
+function escapeHtml(value) {
+    return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+loadJobs();
+</script>
+{% endblock %}

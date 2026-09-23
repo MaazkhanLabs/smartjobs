@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Survey — SmartJobs{% endblock %}
+
+{% block content %}
+<div class="card survey-card">
+    <h1>Student feedback</h1>
+    <p>Your responses help evaluate the project.</p>
+
+    <form id="surveyForm">
+
+        <label>Did this tool help you find more relevant opportunities?</label>
+        <select id="helped">
+            <option value="yes">Yes</option>
+            <option value="somewhat">Somewhat</option>
+            <option value="no">No</option>
+        </select>
+
+        <label>Did you apply to more roles because of this tool?</label>
+        <select id="applied">
+            <option value="yes">Yes</option>
+            <option value="somewhat">Somewhat</option>
+            <option value="no">No</option>
+        </select>
+
+        <label>Comments</label>
+        <textarea id="comments" rows="5"></textarea>
+
+        <button class="primary" type="submit">
+            Submit survey
+        </button>
+    </form>
+
+    <p id="message"></p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById("surveyForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const response = await fetch("/api/survey", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            helped_find_relevant:
+                document.getElementById("helped").value,
+            applied_more:
+                document.getElementById("applied").value,
+            comments:
+                document.getElementById("comments").value
+        })
+    });
+
+    const data = await response.json();
+
+    document.getElementById("message").textContent =
+        data.message || "Submitted";
+});
+</script>
+{% endblock %}
