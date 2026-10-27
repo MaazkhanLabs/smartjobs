@@ -5,7 +5,11 @@ __pycache__/
 venv/
 .env
 *.db
-*.sqlite3
-.idea/
-.vscode/
-.DS_Store
+*.db-wal
+*.db-shm
+*.log
+doc_analysis.txt
+context_analysis.txt
+ui_section_analysis.txt
+test_*.docx
+test_*.pdf
